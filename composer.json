@@ -23,8 +23,7 @@
         "bshaffer/oauth2-server-php":"If you want to use OAuth2 for authentication"
     },
     "require":{
-        "php": ">=5.4",
-        "ext-json": "*"
+        "php":">=7.2"
     },
     "require-dev":{
         "ext-libxml": "*",
