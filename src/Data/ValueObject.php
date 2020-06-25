@@ -24,7 +24,11 @@ class ValueObject implements iValueObject
     public static function __set_state(array $properties)
     {
         $class = get_called_class();
-        $instance = new $class ();
+        static $instantiator = null;
+        if ($instantiator === null) {
+            $instantiator = new \Doctrine\Instantiator\Instantiator();
+        }
+        $instance = $instantiator->instantiate($class);
         $vars = get_object_vars($instance);
         foreach ($properties as $property => $value) {
             if (property_exists($instance, $property)) {

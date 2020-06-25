@@ -687,7 +687,7 @@ class Resources implements iUseAuthentication, iProvideMultiVersionApi
                     continue;
                 if (class_exists($values->dataType)) {
                     $myClassName = $values->dataType;
-                    $defaultObject->$name = new $myClassName();
+                    $defaultObject->$name = self::instantiateClass($myClassName);
                 } else {
                     $defaultObject->$name = '';
                 }
@@ -708,9 +708,10 @@ class Resources implements iUseAuthentication, iProvideMultiVersionApi
         }
         $properties = array();
         if (!$instance) {
-            if (!class_exists($className))
+            if (!class_exists($className)) {
                 return;
-            $instance = new $className();
+            }
+            $instance = self::instantiateClass($className);
         }
         $data = get_object_vars($instance);
         $reflectionClass = new \ReflectionClass($className);
@@ -1005,4 +1006,15 @@ class Resources implements iUseAuthentication, iProvideMultiVersionApi
         }
         return true;
     }
+
+    private static function instantiateClass(string $class)
+    {
+        static $instantiator = null;
+        if ($instantiator === null) {
+            $instantiator = new \Doctrine\Instantiator\Instantiator();
+        }
+        return $instantiator->instantiate($className);
+    }
+
+
 }
