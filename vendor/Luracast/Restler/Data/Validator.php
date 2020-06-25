@@ -690,7 +690,11 @@ class Validator implements iValidate
                             );
                         }
                         $class = $info->type;
-                        $instance = new $class();
+                        static $instantiator = null;
+                        if ($instantiator === null) {
+                            $instantiator = new \Doctrine\Instantiator\Instantiator();
+                        }
+                        $instance = $instantiator->instantiate($class);
                         if (is_array($info->children)) {
                             if (
                                 empty($input) ||
