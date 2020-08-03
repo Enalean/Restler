@@ -1,0 +1,6 @@
+/.gitattributes export-ignore
+/.gitignore export-ignore
+/public/ export-ignore
+/scratch/ export-ignore
+/vendor/Luracast/Restler/Explorer/v1/client/ export-ignore
+/vendor/Luracast/Restler/Explorer/v2/client/ export-ignore
