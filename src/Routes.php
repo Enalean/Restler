@@ -674,7 +674,11 @@ class Routes
                     if ($c = $prop->getDocComment()) {
                         $child += Util::nestedValue(CommentParser::parse($c), 'var') ?: array();
                     } else {
-                        $o = $class->newInstance();
+                        static $instantiator = null;
+                        if ($instantiator === null) {
+                            $instantiator = new \Doctrine\Instantiator\Instantiator();
+                        }
+                        $o = $instantiator->instantiate($className);
                         $p = $prop->getValue($o);
                         if (is_object($p)) {
                             $child['type'] = get_class($p);
