@@ -133,8 +133,14 @@ class Routes
             }
             foreach ($params as $param) {
                 $children = array();
-                $type =
-                    $param->isArray() ? 'array' : $param->getClass();
+                $reflection_type = $param->getType();
+                if ($reflection_type === null) {
+                    $type = null;
+                } elseif ($reflection_type->isBuiltin()) {
+                    $type = $reflection_type->getName();
+                } else {
+                    $type = new ReflectionClass($reflection_type->getName());
+                }
                 $arguments[$param->getName()] = $position;
                 $defaults[$position] = $param->isDefaultValueAvailable() ?
                     $param->getDefaultValue() : null;
