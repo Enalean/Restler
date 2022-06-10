@@ -123,7 +123,17 @@ class Routes
             if (!isset($metadata['param'])) {
                 $metadata['param'] = array();
             }
-            if (isset($metadata['return']['type'])) {
+            $method_return_type = $method->getReturnType();
+            if ($method_return_type instanceof \ReflectionNamedType) { // Skipping method with an union or no explicit return
+                if ($method_return_type->isBuiltin()) {
+                    $metadata['return']['type'] = $method_return_type->getName();
+                } else {
+                    [$metadata['return']['type'], $metadata['return']['children']] = static::getTypeAndModel(
+                        new ReflectionClass($method_return_type->getName()),
+                        $scope
+                    );
+                }
+            } elseif (isset($metadata['return']['type'])) {
                 if ($qualified = Scope::resolve($metadata['return']['type'], $scope))
                     list($metadata['return']['type'], $metadata['return']['children']) =
                         static::getTypeAndModel(new ReflectionClass($qualified), $scope);
@@ -668,8 +678,24 @@ class Routes
                 foreach ($props as $prop) {
                     $name = $prop->getName();
                     $child = array('name' => $name);
-                    if ($c = $prop->getDocComment()) {
-                        $child += Util::nestedValue(CommentParser::parse($c), 'var') ?: array();
+                    $property_type = $prop->getType();
+                    $doc_comment = $prop->getDocComment();
+                    $parsed_doc_comment = Util::nestedValue(CommentParser::parse($doc_comment), 'var') ?: [];
+                    if ($property_type instanceof \ReflectionNamedType) { // Skipping parameter with an union or no explicit type
+                        $child += $parsed_doc_comment;
+                        if ($property_type->isBuiltin()) {
+                            $child['type'] = $property_type->getName();
+                        } else {
+                            [$child['type'], $child['children']] = static::getTypeAndModel(new ReflectionClass($property_type->getName()), $scope);
+                        }
+                        if ($prop->hasDefaultValue()) {
+                            if (! isset($child['properties'])) {
+                                $child['properties'] = [];
+                            }
+                            $child['properties']['required'] = false;
+                        }
+                    } elseif ($doc_comment) {
+                        $child += $parsed_doc_comment;
                     } else {
                         static $instantiator = null;
                         if ($instantiator === null) {
